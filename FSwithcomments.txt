@@ -1,0 +1,687 @@
+package paper;
+
+import weka.core.Instances;
+import weka.core.converters.ConverterUtils.DataSource;
+import weka.core.Instance;
+import weka.core.Instances;
+import weka.core.converters.ConverterUtils.DataSource;
+import weka.classifiers.Evaluation;
+import weka.classifiers.trees.J48;
+import java.io.*;
+import java.util.Random;
+
+import weka.classifiers.trees.RandomForest;
+import weka.classifiers.bayes.NaiveBayes;
+import weka.classifiers.functions.LibSVM;
+import weka.core.Instances;
+import weka.core.converters.ArffSaver;
+import weka.core.converters.CSVLoader;
+import weka.filters.Filter;
+import weka.filters.unsupervised.attribute.NumericToNominal;
+import weka.filters.unsupervised.attribute.Remove;
+public class Finalfinal {
+
+	public static void main(String[] args) {
+		try{
+			
+				int constant=0;
+				DataSource source = new DataSource("C:/Users/KING/Desktop/project/10fold/datasets/contraceptive.arff"); // taking complete dataset as input
+				Instances filtered1 = source.getDataSet();
+				int noatr=filtered1.numAttributes();
+			//	System.out.println(noatr);
+			
+			
+				int tempbvw[]=new int[noatr]; // size of binary vector equals to number of attributes in the dataset
+				int mergebv[][]=new int[100][100];
+				double arraccuracy[]=new double[100];
+				double funcaccuracy[]=new double[100];
+				int bv[]=new int[100];
+				int bv1[]=new int[100];
+				int R[][]=new int[500][100];
+				int RM[][]= new int[500][100];
+				int RR[][]=new int[500][100];
+				int combine[][]=new int[1500][100];
+				int arey=1;
+				int nobv=10;
+				
+				while(constant<3)	//to generate binary vectors randomly until maximum prediction accuracy is attained
+				{
+					if(arey==1)
+					{
+					
+						for(int j=0;j<nobv;j++)
+						{
+		
+							for(int i=0;i<noatr-1;i++)
+							{
+								double rnd=(double)(Math.random());
+								if(rnd<0.5)
+								{
+									bv[i]=0;
+								}
+								else
+								{
+									bv[i]=1;
+								}
+							}
+							bv[noatr-1]=1;
+						//	System.out.println(java.util.Arrays.toString(bv));
+							
+						
+							for(int h=0;h<noatr;h++)
+							{
+								R[j][h]=bv[h];		
+							}
+						//	System.out.println("R:"+java.util.Arrays.toString(R));
+							
+							for(int i=0;i<5;i++) //  shuffle the attributes randomly for five times to generate new binary vector
+							{
+								int a,b,temp=0;
+								a=(int)(Math.random()*(noatr-2));
+								b=(int)(Math.random()*(noatr-2));
+								temp=bv[a];
+								bv[a]=bv[b];
+								bv[b]=temp;
+							}
+							for(int h=0;h<noatr;h++)
+							{
+								RM[j][h]=bv[h];
+							}
+						}
+		
+						for(int t=0;t<nobv;t++)
+						{
+		
+							for(int i=0;i<noatr-1;i++)
+							{
+								double rnd=(double)(Math.random());
+								if(rnd<0.5)
+								{
+									bv1[i]=0;
+								}
+								else
+								{
+									bv1[i]=1;
+								}
+						
+							}
+							bv1[noatr-1]=1;
+			
+							for(int h=0;h<noatr;h++)
+							{
+								RR[t][h]=bv1[h];
+							}
+						}
+						for(int i=0;i<nobv;i++)
+						{
+							for(int h=0;h<noatr;h++)
+							{
+								combine[i][h]=R[i][h];		// copying randomly generated binary vectors into combined matrix
+								
+							}
+							
+						}	
+						for(int i=0;i<nobv;i++)
+						{
+							for(int h=0;h<noatr;h++)
+							{
+								combine[i+10][h]=RM[i][h];	// copying binary vectors after swapping randomly into combined matrix
+								
+							}
+						}
+						for(int i=0;i<nobv;i++)
+						{
+							for(int h=0;h<noatr;h++)
+							{
+								combine[i+20][h]=RR[i][h];	// copying second time randomly generated binary vectors into combined matrix
+								
+							}
+						}
+					//	for(int i=0;i<150;i++)
+					//	{
+						//	for(int h=0;h<10;h++)
+							//{
+								//System.out.println(combine[i][h]);
+								
+						//	}
+							
+						//}
+				}
+				else
+				{	//	System.out.println("entered else");
+					for(int hg=0;hg<nobv;hg++)
+					{
+						for(int yu=0;yu<noatr-1;yu++)
+						{
+							RM[hg][yu]=R[hg][yu];
+						}
+					}
+						for(int j=0;j<nobv;j++)
+						{
+							
+								for(int ik=0;ik<5;ik++)
+								{
+									int a,b;
+									int temp=0;
+									a=(int)(Math.random()*(noatr-2));
+									b=(int)(Math.random()*(noatr-2));
+									temp=RM[j][a];
+									RM[j][a]=RM[j][b];
+									RM[j][b]=temp;
+									
+								}
+								
+							}
+							
+	
+						for(int t=0;t<nobv;t++)
+						{
+	
+							for(int i=0;i<noatr-1;i++)
+							{
+								double rnd=(double)(Math.random());
+								if(rnd<0.5)
+								{
+									bv1[i]=0;
+								}
+								else
+								{
+									bv1[i]=1;
+								}
+					
+							}
+							bv1[noatr-1]=1;
+		
+							for(int h=0;h<noatr;h++)
+							{
+								RR[t][h]=bv1[h];
+							}
+						}
+						for(int i=0;i<nobv;i++)
+						{
+							for(int h=0;h<noatr;h++)
+							{
+								combine[i][h]=R[i][h];
+								
+							}
+							
+						}	
+						for(int i=0;i<nobv;i++)
+						{
+							for(int h=0;h<noatr;h++)
+							{
+								combine[i+10][h]=RM[i][h];
+								
+							}
+						}
+						for(int i=0;i<nobv;i++)
+						{
+							for(int h=0;h<noatr;h++)
+							{
+								combine[i+20][h]=RR[i][h];
+								
+							}
+						}
+						/*	for(int i=0;i<150;i++)
+						{
+							for(int h=0;h<10;h++)
+							{
+								System.out.println(combine[i][h]);
+								
+							}
+							
+						}*/
+
+						
+					}
+			
+					for(int loop=0;loop<30;loop++)//loop to pass all generated binary vectors into ensemble classifier
+					{
+						int noones=0;
+						Instances filtered = source.getDataSet();
+					//	int noatr=filtered.numAttributes();
+						Remove rem = new Remove();	// filter to remove the attributes from dataset
+		
+						String str="";
+						int uno[]=new int[noatr];
+						for(int yt=0;yt<noatr;yt++)
+						{
+							uno[yt]=combine[loop][yt];
+						}
+						
+					//	System.out.println("chandu:"+java.util.Arrays.toString(uno));
+						
+						for(int y=0;y<noatr-1;y++)	// loop to find '0' positions in the binary vector
+						{
+							
+							int bin=combine[loop][y];
+							//char a_char = combine[loop].charAt(y);
+							//System.out.println("achar=" +a_char);
+							if(bin==0)
+							{
+								str=str.concat(Integer.toString(y+1));
+								str=str.concat(",");
+							}
+							else
+							{
+								noones++;
+							}
+						}
+		
+						int last=str.lastIndexOf(',');
+						str=str.substring(0, last);
+		
+					//	System.out.println(str);
+						rem.setAttributeIndices(str);
+						rem.setInvertSelection(false);
+						rem.setInputFormat(filtered);
+						Instances trainDataset = Filter.useFilter(filtered, rem); 
+						
+						int fsg=trainDataset.numAttributes();
+					//	System.out.println("no of attributes after applying filter" +fsg);
+						trainDataset.setClassIndex(trainDataset.numAttributes()-1);
+						
+						final NumericToNominal filter = new NumericToNominal();	// filter to convert all attributes into nominal
+						Evaluation eval = new Evaluation(trainDataset);
+
+			 
+						filter.setInputFormat(trainDataset);
+						trainDataset = Filter.useFilter(trainDataset, filter);
+
+						int numClasses = trainDataset.numClasses();
+			   
+					//	System.out.println("number of class labels in given dataset" +numClasses);
+			
+						//building naive bayes
+						
+						NaiveBayes nb = new NaiveBayes();
+						nb.buildClassifier(trainDataset);
+						eval.crossValidateModel(nb, trainDataset, 10, new Random(1));
+			
+					
+						// building randomforests
+						
+						RandomForest rf = new RandomForest();
+						rf.buildClassifier(trainDataset);
+					    eval.crossValidateModel(rf, trainDataset, 10, new Random(1));
+					    
+			    //building svm
+					    
+						LibSVM sv = new LibSVM();
+						sv.buildClassifier(trainDataset);
+						eval.crossValidateModel(sv, trainDataset, 10, new Random(1));
+			
+						
+			 
+			//building J48
+						J48 al = new J48();
+						al.buildClassifier(trainDataset);
+						eval.crossValidateModel(al, trainDataset, 10, new Random(1));
+			
+					
+			 
+			 
+						int m = trainDataset.numInstances();
+						int n=5;
+						String[][] arr= new String[m][n];
+			
+			
+						for (int i = 0; i < trainDataset.numInstances(); i++) {
+			
+							Instance newInstnb = trainDataset.instance(i);
+							double predNB = nb.classifyInstance(newInstnb);
+							//use this value to get string value of the predicted class
+							String predStringnb = trainDataset.classAttribute().value((int) predNB);
+							arr[i][0] = predStringnb;	// copying output of nb classifier into array first column
+						}
+			
+						for (int j = 0; j < trainDataset.numInstances(); j++) {
+							
+							Instance newInstrf = trainDataset.instance(j);
+							double predrf = rf.classifyInstance(newInstrf);
+							//use this value to get string value of the predicted class
+							String predStringrf = trainDataset.classAttribute().value((int) predrf);
+							arr[j][1] = predStringrf;	// copying output of rf classifier into array second column
+						}
+			
+						for (int k = 0; k < trainDataset.numInstances(); k++) {
+				
+							Instance newInstsvm = trainDataset.instance(k);
+							double predsvm = sv.classifyInstance(newInstsvm);
+							//use this value to get string value of the predicted class
+							String predStringsvm = trainDataset.classAttribute().value((int) predsvm);
+							arr[k][2] = predStringsvm;	// copying output of svm classifier into array third column
+						}
+						
+			
+			
+						for (int l = 0; l < trainDataset.numInstances(); l++) {
+							Instance newInstj48 = trainDataset.instance(l);
+							double predj48 = al.classifyInstance(newInstj48);
+							//use this value to get string value of the predicted class
+							String predStringj48 = trainDataset.classAttribute().value((int) predj48);
+							arr[l][3] = predStringj48;	// copying output of j48 classifier into array fourth column
+						}
+						for(int y=0;y<m;y++)
+						{
+							double actualClassnb = trainDataset.instance(y).classValue();
+							//get class string value using the class index using the class's int value
+							String actual = trainDataset.classAttribute().value((int) actualClassnb);
+							arr[y][4] = actual;		// copying actual class label of dataset into fifth column of array
+				
+						}
+			
+			
+						int[][] train= new int[m][5];
+						for(int q=0;q<m;q++)
+						{
+							for(int p=0;p<=4;p++)
+							{
+								train[q][p]=Integer.parseInt(arr[q][p]);
+							}
+						}
+		
+		
+						try
+						{
+							FileWriter writer = new FileWriter("C:/Users/KING/Desktop/project/finaltrain.csv");	// converting the above created array into a csv file
+							PrintWriter pw = new PrintWriter(writer);
+
+
+							for(int q1=0;q1<m;q1++)
+							{
+								for(int p1=0;p1<=4;p1++)
+								{
+									pw.print(train[q1][p1]);
+									if(p1!=4)
+									{
+										pw.print(",");
+									}
+						
+								}
+								pw.println();
+					
+							}
+							writer.toString();    
+							writer.flush();
+							writer.close();
+						}
+						catch(Exception e)
+						{
+			 
+						}
+			 
+						try {
+							String f1 = "C:/Users/KING/Desktop/project/finaltrain.csv";
+							String f2 = "C:/Users/KING/Desktop/project/finaltrain.arff";	// converting the csv file into arff file 
+
+			            // load the CSV file (input file)
+							CSVLoader loader = new CSVLoader();
+							loader.setSource(new File(f1));
+							String [] options = new String[1];
+							options[0]="-H";
+							loader.setOptions(options);
+
+							Instances data = loader.getDataSet();
+			          //  System.out.println(data);
+
+			            // save as an  ARFF (output file)
+							ArffSaver saver = new ArffSaver();
+							saver.setInstances(data);
+							saver.setFile(new File(f2));
+			           // saver.setDestination(new File(f2));
+							saver.writeBatch();
+						}
+						catch(Exception e1) {}
+			        
+						DataSource sourcefm = new DataSource("C:/Users/KING/Desktop/project/finaltrain.arff");	// taking the newly created dataset as input to the ensemble method(random forest)
+						
+						Instances trainDatasetfm = sourcefm.getDataSet();	
+						//set class index to the last attribute
+						trainDatasetfm.setClassIndex(trainDatasetfm.numAttributes()-1);
+						 
+						
+					//	int numtrainClass = trainDatasetfm.numClasses();
+						
+						filter.setInputFormat(trainDatasetfm);
+						trainDatasetfm = Filter.useFilter(trainDatasetfm, filter);
+
+						//building randomforest
+						
+						RandomForest fm = new RandomForest();	// random forest used as ensemble method
+						fm.buildClassifier(trainDatasetfm);
+						eval.crossValidateModel(fm, trainDatasetfm, 10, new Random(1));
+					
+						//loading testdataset
+						
+						int mj = trainDatasetfm.numInstances();
+						String actualcl[] = new String[mj];
+						String predictedcl[] = new String[mj];
+			
+						
+						for (int i = 0; i < mj; i++) {
+							//get class double value for current instance
+							double actualClass = trainDatasetfm.instance(i).classValue();
+							//get class string value using the class index using the class's int value
+							String actual = trainDatasetfm.classAttribute().value((int) actualClass);
+							actualcl[i] = actual;
+							//get Instance object of current instance
+							Instance newInst = trainDatasetfm.instance(i);
+							//call classifyInstance, which returns a double value for the class
+							double pred = fm.classifyInstance(newInst);
+							String predString = trainDatasetfm.classAttribute().value((int) pred);
+							predictedcl[i] = predString;
+						}
+						
+					
+						double s=0;
+						for(int r=0;r<mj;r++)
+						{
+							if(Integer.parseInt(actualcl[r])== Integer.parseInt(predictedcl[r]))
+							{
+								s++;
+							}
+						}
+						
+					
+						double d=mj;
+						
+						double accuracy=100-(((d-s)/d)*100);
+						double accdecimal=1-((d-s)/d);
+						double funcvalue=accdecimal/(1+(noones/noatr));
+						
+						funcaccuracy[loop]=funcvalue;	// variable to sort the binary vectors based on ensemble classifier accuracies
+						
+						arraccuracy[loop]=accuracy;		// array to store the accuracies generated for each binary vector
+						int tempbv1[]=new int[noatr];
+						for(int fd=0;fd<noatr;fd++)
+						{
+							tempbv1[fd]=combine[loop][fd];	// array to store binary vector
+						}
+					//	System.out.println(java.util.Arrays.toString(tempbv1));
+					//	 System.out.println("accuracy of proposed ensemble architecture is "
+						//			+ String.format("%.005f%%", accuracy)
+						//			+ "\n---------------------------------");
+						 arey=0;
+						
+
+		
+				}
+					double tempsortw=0;
+					
+					for(int sortloopw=0;sortloopw<30;sortloopw++)	// loop to find the binary vector with maximum accuracy
+					{
+						if(tempsortw<arraccuracy[sortloopw])
+						{
+							tempsortw=arraccuracy[sortloopw];
+							for(int fdw=0;fdw<noatr;fdw++)
+							{
+								tempbvw[fdw]=combine[sortloopw][fdw];
+							}
+							
+						}
+					}
+					
+					for(int fdw=0;fdw<noatr;fdw++)
+					{
+						
+						mergebv[constant][fdw]=tempbvw[fdw];
+					}
+					
+					//System.out.println("iteration:" +constant);
+					System.out.println("the binary vector giving best accuracy in iteration" +(constant+1)+"is " 
+					+java.util.Arrays.toString(tempbvw) +
+							"and accuracy is" + String.format("%.005f%%", tempsortw));
+		
+		int index[]=new int[100];
+		double temp=0,temp1=0,temp2=0;
+			int	ind=0;
+		if(constant<2)
+		{
+		for(int i=0;i<30;i++)
+		{
+			temp1=funcaccuracy[i];
+			for(int jt=0;jt<30;jt++)
+			{
+				
+				temp2=funcaccuracy[jt];
+				if(temp1<=temp2)
+				{
+					temp=temp1;
+					temp1=temp2;
+					temp2=temp;
+					ind=jt;
+				}
+				
+			}
+			index[i]=ind;
+			funcaccuracy[ind]=0;
+		}
+		for(int i=0;i<nobv;i++)
+		{
+			for(int jh=0;jh<noatr;jh++)
+			{
+			R[i][jh]=combine[index[i]][jh];
+			//System.out.println(index[i]);
+			}
+		
+		
+		}
+		
+				
+	}	
+		constant++;
+				}	
+				double merge[][]=new double[1000][1000];
+				for(int re=0;re<30;re++)
+				{
+					for(int we=0;we<noatr;we++)
+					{
+						merge[re][we]=combine[re][we];
+					}
+				}
+				for(int re=0;re<30;re++)
+				{
+					
+						merge[re][noatr]=arraccuracy[re];
+					
+				}
+				
+				try
+				{
+					FileWriter writer = new FileWriter("C:/Users/KING/Desktop/project/accuracyfile.csv");	// to create a datafile with accuracies generated for binary vector in last iteration
+					PrintWriter pw1 = new PrintWriter(writer);
+
+
+					for(int q1=0;q1<30;q1++)
+					{
+						for(int p1=0;p1<=noatr;p1++)
+						{
+							pw1.print(merge[q1][p1]);
+							if(p1!=noatr)
+							{
+								pw1.print(",");
+							}
+							else if(p1==noatr-1)
+							{
+								pw1.print("-");
+							}
+				
+						}
+						pw1.println();
+			
+					}
+					writer.toString();    
+					writer.flush();
+					writer.close();
+				}
+				catch(Exception e)
+				{
+	 
+				}
+				
+		double tempsort=0;
+		int tempbv[]=new int[noatr];
+		for(int sortloop=0;sortloop<30;sortloop++)	// loop to find the binary vector that gives the maximum accuracy among all the iterations
+		{
+			if(tempsort<arraccuracy[sortloop])
+			{
+				tempsort=arraccuracy[sortloop];
+				for(int fd=0;fd<noatr;fd++)
+				{
+					tempbv[fd]=combine[sortloop][fd];
+					mergebv[constant][fd]=tempbv[fd];
+				}
+				
+			}
+		}
+		
+	//	System.out.println("the binary vector giving best accuracy is");
+				int zero[]=new int[30];
+				for(int yo=0;yo<30;yo++)
+				{
+					zero[yo]=0;
+				}
+		for(int ty=0;ty<constant;ty++)
+		{
+			for(int hg=0;hg<noatr;hg++)
+			{
+				if(mergebv[ty][hg]==0)
+				{
+					zero[ty]++;
+				}
+			}
+			
+		}
+		int yup=0,ket=0;
+		int bestbin[][]=new int[100][100];
+		for(int it=0;it<constant;it++)
+		{
+			if(yup<zero[it])
+			{
+				yup=zero[it];
+				for(int op=0;op<noatr;op++)
+				{
+				bestbin[it][op]=mergebv[it][op];
+				ket=it;
+				}
+			}
+		}
+		int bin[]=new int[noatr];
+		for(int hk=0;hk<noatr;hk++)
+		{
+			bin[hk]=bestbin[ket][hk];
+		}
+		
+		System.out.println("the binary vector giving best accuracy is" +java.util.Arrays.toString(bin) +"and accuracy is" + String.format("%.005f%%", tempsort));
+		
+				
+	}
+		
+
+
+	//	}
+		catch(Exception e){}
+	}
+
+}
